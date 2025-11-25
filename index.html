@@ -47,7 +47,7 @@
 				ambientLight = new THREE.AmbientLight( 0x333333 );	// 0.2
 
 				light = new THREE.DirectionalLight( 0xFFFFFF, 1.0 );
-				light.position.set( 1, 1, 1 );				
+				light.position.set( 1, 1, 3 );				
 				// direction is set in GUI
 
 				// RENDERER
@@ -81,7 +81,7 @@
 
 				// scene objects
 				
-				var geometry = new THREE.BoxGeometry ( 100, 100, 100 );
+				var geometry = new THREE.BoxGeometry ( 1000, 1000, 1000 );
 				var material = new THREE.MeshPhongMaterial( { color: 0xc41e3a } );	
 						
 				var materials = [ ];
