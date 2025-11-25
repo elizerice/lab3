@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 	<head>
@@ -8,7 +9,7 @@
 	</head>
 	<body>
 		<div id="info">
-			Трехмерные фигуры
+			Модель помещения
 		</div>
 
 		<!-- Import maps polyfill -->
@@ -27,10 +28,13 @@
 
 			import * as THREE from 'three';
 			import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+			import { MTLLoader } from 'three/addons/loaders/MTLLoader.js';
+			import { OBJLoader } from 'three/addons/loaders/OBJLoader.js';
 
 			var camera, scene, renderer;
 			var controls;
 			var ambientLight, light;
+          	let object;
 			init();
 			animate();
 
@@ -40,14 +44,13 @@
 				document.body.appendChild( container );
 
 				// CAMERA
-				camera = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, 1, 80000 );
-				camera.position.set( - 600, 500, 1100 );
-
+				camera = new THREE.PerspectiveCamera( 65, window.innerWidth / window.innerHeight, 1, 80000 );
+              
 				// LIGHTS
-				ambientLight = new THREE.AmbientLight( 0x333333 );	// 0.2
+				ambientLight = new THREE.AmbientLight( 0x333333, 50 );	// 0.2
 
 				light = new THREE.DirectionalLight( 0xFFFFFF, 1.0 );
-				light.position.set( 1, 1, 3 );				
+				light.position.set( 1, 1, 1 );				
 				// direction is set in GUI
 
 				// RENDERER
@@ -62,14 +65,17 @@
 				// CONTROLS
 				controls = new OrbitControls( camera, renderer.domElement );
 				controls.addEventListener( 'change', render );
-				//controls.rotateSpeed = 1; 
+				//controls.rotateSpeed = 0.05; 
 				controls.enableZoom = true;  
 				controls.zoomSpeed = 0.5;  
 
 				controls.minDistance = 500;
-				controls.maxDistance = 2500;
+				controls.maxDistance = 5000;
 				
 				controls.enableDamping = true;
+				camera.position.set( 0, -500, 2900 );
+			    controls.target.set( 50, 0, 50 );           
+              
 
 				// scene itself
 				scene = new THREE.Scene();
@@ -80,33 +86,62 @@
 			
 
 				// scene objects
-				
-				var geometry = new THREE.BoxGeometry ( 1000, 1000, 1000 );
-				var material = new THREE.MeshPhongMaterial( { color: 0xc41e3a } );	
-						
+
 				var materials = [ ];
 				var textureLoader = new THREE.TextureLoader();
 				for ( let i = 1; i <= 6; i++ ) {
-					var texture = textureLoader.load( 'textures/' + String(i) + '.jpg' );
-					var material = new THREE.MeshPhongMaterial( { map: texture, color: 0xFFFFFF } );
-					materials.push( material );
-				}
-        
+			var texture = textureLoader.load( 'textures/' + String(i) + '.jpg' );
+			var material = new THREE.MeshPhongMaterial( 
+              		{ map: texture, side: THREE.BackSide } );
+                  texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
+                  texture.repeat.x = - 1;
+                  if (i==4 || i==3 ) texture.repeat.set( 3, 3 );
+                  if (i==3) texture.offset.set(0.05, 0.2);
+				materials.push( material );
+				}              
+              
+				var geometry = new THREE.BoxGeometry ( 5000, 5000, 5000 );		
 				var Cube = new THREE.Mesh( geometry, materials );
-				Cube.rotation.y = Math.PI / 6;
+				Cube.position.y = 100;
 				scene.add( Cube );
 
+              
+              
 
-				
-				var material = new THREE.MeshPhongMaterial({
-				  map: texture,
-				  color: 0xFFFFFF,
-				  side: THREE.DoubleSide
-				});
-				
+ 				// model
 
+				const onProgress = function ( xhr ) {
 
+					if ( xhr.lengthComputable ) {
 
+						const percentComplete = xhr.loaded / xhr.total * 100;
+						console.log( percentComplete.toFixed( 2 ) + '% downloaded' );
+
+					}
+
+				};
+
+				new MTLLoader()
+					.setPath( 'https://threejs.org/examples/models/obj/male02/' )
+					.load( 'male02.mtl', function ( materials ) {
+
+						materials.preload();
+
+						new OBJLoader()
+							.setMaterials( materials )
+							.setPath( 'https://threejs.org/examples/models/obj/male02/' )
+							.load( 'male02.obj', function ( object ) {
+
+								object.position.set (-1500, -2400, -200 );
+                                object.rotation.y = Math.PI / 2;
+								object.scale.setScalar( 10 );
+								scene.add( object );
+
+							}, onProgress );
+
+					} );             
+              
+              
 			}
 
 			// EVENT HANDLERS
@@ -126,7 +161,7 @@
 			function animate() {
 
 				requestAnimationFrame( animate );
-				controls.update(); //
+				controls.update(500); //
 				render();
 
 			}
@@ -149,5 +184,3 @@
 
 	</body>
 </html>
-
-
